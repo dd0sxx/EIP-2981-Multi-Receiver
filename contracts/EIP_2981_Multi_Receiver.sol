@@ -3,8 +3,6 @@
 
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
-
 contract EIP2981_Multi_Receiver {
 
     bool internal locked;
@@ -16,6 +14,8 @@ contract EIP2981_Multi_Receiver {
         locked = false;
     }
 
+    event distributedRoyalties (address, uint);
+
     struct receiver {
         address payable wallet;
         uint8 percent;
@@ -26,10 +26,17 @@ contract EIP2981_Multi_Receiver {
     mapping(address => uint8) receiversMap;
    
     constructor(receiver[] memory list) {
-        for (uint i; i < list.length; i++) {
-            receiversMap[list[i].wallet] = list[i].percent;
-            receiversArray.push(list[i].wallet);
-        }
+        setReceivers(list);
+    }
+
+    function setReceivers (receiver[] memory list) public {
+        uint8 totalPercent;
+            for (uint i; i < list.length; i++) {
+                receiversMap[list[i].wallet] = list[i].percent;
+                receiversArray.push(list[i].wallet);
+                totalPercent += list[i].percent;
+            }
+        require (totalPercent == 100, 'does not sum to 100%');
     }
 
     receive () external payable reentrancyGuard {
@@ -38,6 +45,7 @@ contract EIP2981_Multi_Receiver {
             uint portion = (msg.value * 100) / receiversMap[addressTemp];
             (bool status, ) = addressTemp.call{value: portion}("");
             require(status == true, 'withdraw failed');
+            emit distributedRoyalties(addressTemp, portion);
         }
     }
 
