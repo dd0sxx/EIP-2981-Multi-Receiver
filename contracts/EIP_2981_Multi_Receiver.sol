@@ -31,13 +31,23 @@ contract EIP2981_Multi_Receiver {
 
     function setReceivers (receiver[] memory list) public {
         uint8 totalPercent;
-            for (uint i; i < list.length; i++) {
-                receiversMap[list[i].wallet] = list[i].percent;
-                receiversArray.push(list[i].wallet);
-                totalPercent += list[i].percent;
-            }
+        for (uint i; i < list.length; i++) {
+            receiversMap[list[i].wallet] = list[i].percent;
+            receiversArray.push(list[i].wallet);
+            totalPercent += list[i].percent;
+        }
         require (totalPercent == 100, 'does not sum to 100%');
     }
+
+    //this doesnt work but I want to test the contract out with tuples instead of mapping and see how it works
+    // function getReceivers () external view returns (receiver[] memory) {
+    //     receiver[] storage output;
+    //     for(uint i; i < receiversArray.length; i++) {
+    //         receiver memory tempReceiver = receiver(payable(receiversArray[i]), receiversMap[receiversArray[i]]);
+    //         output.push(tempReceiver);
+    //     }
+    //     return output;
+    // }
 
     receive () external payable reentrancyGuard {
         for(uint i; i < receiversArray.length; i++) {
