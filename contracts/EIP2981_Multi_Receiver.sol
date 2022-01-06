@@ -1,6 +1,8 @@
 //SPDX-License-Identifier: MIT
 ///@author: dd0sxx
 
+import 'hardhat/console.sol';
+
 pragma solidity ^0.8.0;
 
 contract EIP2981_Multi_Receiver {
@@ -44,7 +46,7 @@ contract EIP2981_Multi_Receiver {
         return receiversMap[member];
     }
 
-    function isReceiver (address member) external view returns (bool) {
+    function isReceiver (address member) public view returns (bool) {
         if (receiversMap[member] > 0) { 
             return true;
         } else {
@@ -52,14 +54,18 @@ contract EIP2981_Multi_Receiver {
         } 
     }
 
-    receive () external payable reentrancyGuard {
+    function withdraw (address member) external reentrancyGuard {
+        require (isReceiver(member), 'address is not a receiver');
+        require(address(this).balance > 0);
         for(uint i; i < receiversArray.length; i++) {
             address payable addressTemp = payable(receiversArray[i]);
-            uint portion = (msg.value * 100) / receiversMap[addressTemp];
+            uint portion = (address(this).balance * 100) / receiversMap[addressTemp];
             (bool status, ) = addressTemp.call{value: portion}("");
             require(status == true, 'withdraw failed');
             emit distributedRoyalties(addressTemp, portion);
         }
     }
+
+    receive () external payable  {}
 
 }

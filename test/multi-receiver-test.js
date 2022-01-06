@@ -27,4 +27,9 @@ describe("multi-receiver-test", function () {
     expect(await Mr.getPercentage(bob.address)).to.deep.equal(30)    
     expect(await Mr.getPercentage(charlotte.address)).to.deep.equal(20)    
   })
+
+  it("receive and payout funds", async function () {
+    //mock royalty payment from some marketplace to this contract
+    await alice.sendTransaction({to: Mr.address, value: ethers.utils.parseEther('10')})
+  })  
 })
