@@ -1,19 +1,22 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { expect } = require("chai")
+const { ethers } = require("hardhat")
 
 describe("multi-receiver-test", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+  let alice,bob,charlotte
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+  beforeEach (async () => {
+    [a, b, c] = await ethers.getSigners()
+    alice = a
+    bob = b
+    charlotte = c
+    const MR = await ethers.getContractFactory("EIP2981_Multi_Receiver")
+    const Mr = await MR.deploy([{wallet: alice.address, percent: 50}, {wallet: alice.address, percent: 30}, {wallet: alice.address, percent: 20}])
+    await Mr.deployed()
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+  })
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+  it("should create a list of receivers", async function () {
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
-  });
-});
+    
+  })
+})
